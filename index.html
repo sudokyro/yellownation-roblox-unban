@@ -1,2 +1,282 @@
-<title>Hey</title>
-<h1>Test</h1>
+<!DOCTYPE html>
+<html lang="en">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Unban Countdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000000, #1a0000, #000033, #001a00);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ff0000, #ff6600, #ffcc00, #00ff00, #0099ff, #9900ff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .countdown {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            min-width: 150px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .time-box:nth-child(1) { animation-delay: 0s; }
+        .time-box:nth-child(2) { animation-delay: 0.2s; }
+        .time-box:nth-child(3) { animation-delay: 0.4s; }
+        .time-box:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .time-box:hover {
+            transform: scale(1.1) translateY(-5px);
+            border-color: rgba(255, 0, 0, 0.8);
+            box-shadow: 0 0 60px rgba(255, 0, 0, 0.6);
+        }
+
+        .time-value {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #ff0000, #ff6666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .time-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #aaa;
+            letter-spacing: 2px;
+        }
+
+        .roblox-logo {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: rotate360 10s linear infinite;
+            filter: drop-shadow(0 0 30px rgba(255, 0, 0, 0.8));
+        }
+
+        @keyframes rotate360 {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 80%;
+            max-width: 800px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6600, #ffcc00);
+            background-size: 200% 100%;
+            animation: progressGlow 2s linear infinite;
+            transition: width 1s ease;
+            border-radius: 15px;
+        }
+
+        @keyframes progressGlow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 2rem; }
+            .subtitle { font-size: 1rem; }
+            .countdown { flex-wrap: wrap; gap: 1rem; }
+            .time-box { 
+                min-width: 100px; 
+                padding: 1.5rem 1rem; 
+            }
+            .time-value { font-size: 2.5rem; }
+            .roblox-logo { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="roblox-logo">🎮</div>
+        <h1 class="title">Unban Countdown</h1>
+        
+        <div class="countdown">
+            <div class="time-box">
+                <div class="time-value" id="days">00</div>
+                <div class="time-label">Days</div>
+            </div>
+            <div class="time-box">
+                <div class="time-value" id="hours">00</div>
+                <div class="time-label">Hours</div>
+            </div>
+            <div class="time-box">
+                <div class="time-value" id="minutes">00</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-box">
+                <div class="time-value" id="seconds">00</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+    </div>
+
+    <script>
+        const unbanDate = new Date('2025-12-11T23:27:00').getTime();
+        const startDate = new Date('2024-01-01T00:00:00').getTime();
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = unbanDate - now;
+
+            if (distance < 0) {
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                document.querySelector('.subtitle').textContent = 'WELCOME BACK! 🎉';
+                document.getElementById('progress').style.width = '100%';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+            const totalDuration = unbanDate - startDate;
+            const elapsed = now - startDate;
+            const progress = (elapsed / totalDuration) * 100;
+            document.getElementById('progress').style.width = Math.min(progress, 100) + '%';
+        }
+
+        createStars();
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
