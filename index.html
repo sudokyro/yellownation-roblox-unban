@@ -34,7 +34,6 @@
         position: relative;
     }
 
-    /* CRT OVERLAY EFFECTS */
     .scanlines {
         position: fixed;
         top: 0;
@@ -74,7 +73,6 @@
         z-index: 0;
     }
 
-    /* MAIN INTERFACE */
     .container {
         position: relative;
         z-index: 10;
@@ -93,7 +91,6 @@
         transition: transform 0.1s;
     }
 
-    /* TECH CORNERS */
     .corner {
         position: absolute;
         width: 20px;
@@ -114,7 +111,6 @@
         box-shadow: 0 0 15px var(--accent);
     }
 
-    /* TYPOGRAPHY & GLITCH */
     h1 {
         font-family: 'Orbitron', sans-serif;
         font-size: 3.5rem;
@@ -173,7 +169,6 @@
         opacity: 0.8;
     }
 
-    /* TIMER GRID */
     .timer {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -215,7 +210,6 @@
         opacity: 0.8;
     }
 
-    /* PROGRESS BAR */
     .progress-container {
         width: 100%;
         height: 2px;
@@ -248,7 +242,6 @@
         animation: blink 2s infinite;
     }
 
-    /* --- NEW BUTTON STYLES --- */
     .btn-container {
         margin-top: 35px;
         display: flex;
@@ -296,7 +289,6 @@
         left: 100%;
     }
 
-    /* AUDIO TOGGLE */
     .sound-toggle {
         position: absolute;
         top: 20px;
@@ -318,7 +310,6 @@
         box-shadow: 0 0 10px var(--primary);
     }
 
-    /* ANIMATIONS */
     @keyframes glitch-anim-1 {
         0% { clip: rect(30px, 9999px, 10px, 0); }
         20% { clip: rect(80px, 9999px, 90px, 0); }
@@ -348,7 +339,6 @@
         50% { opacity: 0.3; }
     }
 
-    /* RESPONSIVE */
     @media (max-width: 768px) {
         h1 { font-size: 2rem; }
         .timer { grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -364,7 +354,6 @@
 <div class="vignette"></div>
 <canvas id="canvas-container"></canvas>
 
-<!-- Sound Toggle -->
 <button class="sound-toggle" id="sound-btn" onclick="toggleMute()">[ AUDIO: OFF ]</button>
 
 <div class="container">
@@ -404,7 +393,6 @@
         <div class="progress-bar"></div>
     </div>
 
-    <!-- NEW BUTTON -->
     <div class="btn-container">
         <a href="https://www.roblox.com/users/3221246891/profile?friendshipSourceType=PlayerSearch" target="_blank" class="cyber-btn">
             >> ACCESS PROFILE
@@ -418,7 +406,6 @@
 </div>
 
 <script>
-    // --- CANVAS BACKGROUND SYSTEM ---
     const canvas = document.getElementById('canvas-container');
     const ctx = canvas.getContext('2d');
     let particlesArray;
@@ -537,7 +524,6 @@
     init();
     animate();
 
-    // --- HACKER TEXT DECODE EFFECT ---
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&";
     function hackerEffect(element, finalValue) {
         let iterations = 0;
@@ -559,7 +545,6 @@
         }, 40);
     }
 
-    // --- AUDIO SYSTEM ---
     let isMuted = true;
     let audioCtx = null;
 
@@ -592,24 +577,35 @@
     function playBeep() {
         if (isMuted || !audioCtx) return;
 
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const mod = audioCtx.createOscillator();
+        const modGain = audioCtx.createGain();
 
-        oscillator.type = 'square'; // Digital sound
-        oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime); // High pitch
-        oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05); // Quick drop
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1800, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
 
-        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Volume
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        mod.type = 'square';
+        mod.frequency.setValueAtTime(50, t);
+        modGain.gain.setValueAtTime(200, t);
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+        mod.connect(modGain);
+        modGain.connect(osc.frequency);
 
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.05, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(t);
+        mod.start(t);
+        osc.stop(t + 0.06);
+        mod.stop(t + 0.06);
     }
 
-    // --- LOGIC ---
     const unbanDate = new Date('2025-12-11T23:27:00').getTime();
     let firstLoad = true;
     let lastSecond = -1;
@@ -628,7 +624,6 @@
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Play beep only when the second changes
         if (s !== lastSecond) {
             playBeep();
             lastSecond = s;
@@ -684,18 +679,15 @@
         document.getElementById("minutes").innerText = "00";
         document.getElementById("seconds").innerText = "00";
 
-        // Update button style for unlock
         const btn = document.querySelector('.cyber-btn');
         btn.style.borderColor = "#00ff41";
         btn.style.color = "#00ff41";
         btn.style.boxShadow = "0 0 20px #00ff41";
     }
 
-    // Run immediately then interval
     updateTimer();
     const countdown = setInterval(updateTimer, 1000);
 
-    // Allow audio to start on first interaction anywhere on page
     document.body.addEventListener('click', function() {
         if(audioCtx && audioCtx.state === 'suspended') {
             audioCtx.resume();
