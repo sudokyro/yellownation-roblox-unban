@@ -248,6 +248,76 @@
         animation: blink 2s infinite;
     }
 
+    /* --- NEW BUTTON STYLES --- */
+    .btn-container {
+        margin-top: 35px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .cyber-btn {
+        position: relative;
+        display: inline-block;
+        padding: 15px 40px;
+        color: var(--primary);
+        text-decoration: none;
+        text-transform: uppercase;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        letter-spacing: 2px;
+        font-size: 1rem;
+        border: 1px solid var(--primary);
+        background: rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        transition: 0.3s;
+        cursor: pointer;
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    }
+
+    .cyber-btn:hover {
+        background: var(--primary);
+        color: #000;
+        box-shadow: 0 0 30px var(--primary);
+        text-shadow: none;
+    }
+
+    .cyber-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: 0.5s;
+    }
+
+    .cyber-btn:hover::before {
+        left: 100%;
+    }
+
+    /* AUDIO TOGGLE */
+    .sound-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 5px 10px;
+        font-family: 'Share Tech Mono', monospace;
+        cursor: pointer;
+        font-size: 0.8rem;
+        opacity: 0.7;
+        transition: 0.3s;
+    }
+    .sound-toggle:hover {
+        opacity: 1;
+        background: rgba(255, 0, 60, 0.2);
+        box-shadow: 0 0 10px var(--primary);
+    }
+
     /* ANIMATIONS */
     @keyframes glitch-anim-1 {
         0% { clip: rect(30px, 9999px, 10px, 0); }
@@ -284,7 +354,7 @@
         .timer { grid-template-columns: 1fr 1fr; gap: 15px; }
         .number { font-size: 2.5rem; }
         .container { padding: 20px; }
-        .glitch::before, .glitch::after { display: none; } /* Performance on mobile */
+        .glitch::before, .glitch::after { display: none; } 
     }
 </style>
 </head>
@@ -293,6 +363,9 @@
 <div class="scanlines"></div>
 <div class="vignette"></div>
 <canvas id="canvas-container"></canvas>
+
+<!-- Sound Toggle -->
+<button class="sound-toggle" id="sound-btn" onclick="toggleMute()">[ AUDIO: OFF ]</button>
 
 <div class="container">
     <div class="corner tl"></div>
@@ -330,6 +403,14 @@
     <div class="progress-container">
         <div class="progress-bar"></div>
     </div>
+
+    <!-- NEW BUTTON -->
+    <div class="btn-container">
+        <a href="https://www.roblox.com/users/3221246891/profile?friendshipSourceType=PlayerSearch" target="_blank" class="cyber-btn">
+            >> ACCESS PROFILE
+        </a>
+    </div>
+
     <div class="meta-data">
         <span id="uid-code">ID: 8X-99-REV.0</span>
         <span>TARGET: 2025-12-11 // 23:27</span>
@@ -372,7 +453,6 @@
             ctx.fill();
         }
         update() {
-            // Screen boundaries
             if (this.x > canvas.width || this.x < 0) {
                 this.directionX = -this.directionX;
             }
@@ -380,7 +460,6 @@
                 this.directionY = -this.directionY;
             }
 
-            // Mouse Interaction (Force Field)
             let dx = mouse.x - this.x;
             let dy = mouse.y - this.y;
             let distance = Math.sqrt(dx*dx + dy*dy);
@@ -476,14 +555,64 @@
             if(iterations >= finalValue.length) { 
                 clearInterval(interval);
             }
-            iterations += 1/2; // Speed of decoding
+            iterations += 1/2; 
         }, 40);
     }
 
+    // --- AUDIO SYSTEM ---
+    let isMuted = true;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        const btn = document.getElementById('sound-btn');
+        if (!isMuted) {
+            initAudio();
+            btn.innerText = "[ AUDIO: ON ]";
+            btn.style.color = "#00ff41";
+            btn.style.borderColor = "#00ff41";
+            btn.style.boxShadow = "0 0 10px #00ff41";
+        } else {
+            btn.innerText = "[ AUDIO: OFF ]";
+            btn.style.color = "var(--primary)";
+            btn.style.borderColor = "var(--primary)";
+            btn.style.boxShadow = "none";
+        }
+    }
+
+    function playBeep() {
+        if (isMuted || !audioCtx) return;
+
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square'; // Digital sound
+        oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime); // High pitch
+        oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05); // Quick drop
+
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Volume
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+
     // --- LOGIC ---
-    // ISO Format is much safer for cross-browser compatibility
     const unbanDate = new Date('2025-12-11T23:27:00').getTime();
     let firstLoad = true;
+    let lastSecond = -1;
 
     function updateTimer() {
         const now = new Date().getTime();
@@ -498,6 +627,12 @@
         const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Play beep only when the second changes
+        if (s !== lastSecond) {
+            playBeep();
+            lastSecond = s;
+        }
 
         const dStr = d < 10 ? "0" + d : "" + d;
         const hStr = h < 10 ? "0" + h : "" + h;
@@ -517,7 +652,6 @@
             document.getElementById("seconds").innerText = sStr;
         }
         
-        // Random decorative flicker
         if(Math.random() > 0.95) {
             document.getElementById('uid-code').style.opacity = (Math.random() * 0.5) + 0.5;
         }
@@ -526,13 +660,11 @@
     function handleUnlock() {
         clearInterval(countdown);
         
-        // Change Title
         const title = document.querySelector(".glitch");
         title.setAttribute('data-text', 'ACCESS GRANTED');
         title.innerText = 'ACCESS GRANTED';
         title.style.color = "#00ff41";
         
-        // Change styles to Green Theme
         document.documentElement.style.setProperty('--primary', '#00ff41');
         document.documentElement.style.setProperty('--primary-dim', '#003b0f');
         document.documentElement.style.setProperty('--text-shadow', '0 0 20px #00ff41');
@@ -540,10 +672,8 @@
         document.querySelector(".sub-header").innerHTML = "[ STATUS: <span style='color:#fff'>ONLINE</span> ]";
         document.querySelector(".status-text").innerText = "ONLINE";
         
-        // Reset particles to green
         particlesArray.forEach(p => p.color = '#00ff41');
         
-        // Fill boxes
         document.querySelectorAll('.time-box').forEach(box => {
             box.style.borderColor = "#00ff41";
             box.style.background = "rgba(0, 255, 65, 0.1)";
@@ -553,11 +683,24 @@
         document.getElementById("hours").innerText = "00";
         document.getElementById("minutes").innerText = "00";
         document.getElementById("seconds").innerText = "00";
+
+        // Update button style for unlock
+        const btn = document.querySelector('.cyber-btn');
+        btn.style.borderColor = "#00ff41";
+        btn.style.color = "#00ff41";
+        btn.style.boxShadow = "0 0 20px #00ff41";
     }
 
     // Run immediately then interval
     updateTimer();
     const countdown = setInterval(updateTimer, 1000);
+
+    // Allow audio to start on first interaction anywhere on page
+    document.body.addEventListener('click', function() {
+        if(audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }, {once:true});
 
 </script>
 </body>
